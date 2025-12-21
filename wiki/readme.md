@@ -1,5 +1,3 @@
-[项目主页](https://github.com/Eason3Blue/CiweimaoDownloader)
-
 # 软件介绍
 本软件只能够下载免费章节和已购买的章节。
 
