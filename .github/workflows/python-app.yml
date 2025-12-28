@@ -23,18 +23,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure tag exists
+      - name: Create tags
         shell: pwsh
         run: |
           $tag = '${{ inputs.tag }}'
-          if (-not (git rev-parse $tag -q --verify)) {
-              Write-Host "Tag $tag does not exist, creating..."
-              git tag $tag
-              git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} $tag
-          } else {
-              Write-Host "Tag $tag already exists, skipping creation"
-          }
-
+          git tag -f $tag
+          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} $tag
 
       - name: Set up Python
         uses: actions/setup-python@v5
