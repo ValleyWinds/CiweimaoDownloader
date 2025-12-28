@@ -73,10 +73,6 @@ jobs:
           name: ${{ inputs.tag }}
           body: |
             ${{ inputs.body }}
-
-            ---
-            Built automatically via GitHub Actions.
-            Maintained by @Zn90107UlKa.
           files: |
             release/CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
         env:
