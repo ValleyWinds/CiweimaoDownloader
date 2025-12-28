@@ -1,0 +1,81 @@
+name: Build & Release (Nuitka minimal)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name (must already exist, e.g. v1.0.0)"
+        required: true
+      body:
+        description: "Release description"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag exists
+        shell: bash
+        run: |
+          if ! git rev-parse "${{ inputs.tag }}" >/dev/null 2>&1; then
+            echo "Tag ${{ inputs.tag }} does not exist"
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install nuitka
+
+      - name: Build with Nuitka (minimal)
+        run: |
+          python -m nuitka ^
+            --standalone ^
+            --onefile ^
+            --assume-yes-for-downloads ^
+            --remove-output ^
+            --output-dir=build ^
+            src/main.py
+
+      - name: Prepare release files
+        run: |
+          mkdir release
+          copy build\main.exe release\
+          copy setting.yaml release\
+          copy readme.md release\
+
+      - name: Pack artifacts
+        run: |
+          cd release
+          powershell Compress-Archive * CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
+
+      - name: Create Release & Upload
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.tag }}
+          body: |
+            ${{ inputs.body }}
+
+            ---
+            Built automatically via GitHub Actions.
+            Maintained by @Zn90107UlKa.
+          files: |
+            release/CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
