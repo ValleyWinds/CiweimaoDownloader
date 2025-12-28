@@ -1,13 +1,13 @@
-name: Build & Release (Nuitka minimal)
+name: Build & Release (Linux -> Windows EXE)
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag name (must already exist, e.g. v1.0.0)"
+        description: "Tag name (must exist, e.g. v1.0.0)"
         required: true
       body:
-        description: "Release description"
+        description: "Release description (Markdown allowed)"
         required: true
 
 permissions:
@@ -15,16 +15,18 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11]
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Verify tag exists
-        shell: bash
         run: |
           if ! git rev-parse "${{ inputs.tag }}" >/dev/null 2>&1; then
             echo "Tag ${{ inputs.tag }} does not exist"
@@ -34,7 +36,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
@@ -42,29 +52,34 @@ jobs:
           pip install -r requirements.txt
           pip install nuitka
 
-      - name: Build with Nuitka (minimal)
-        shell: pwsh
+      - name: Install Wine
         run: |
-          python -m nuitka `
-            --standalone `
-            --onefile `
-            --assume-yes-for-downloads `
-            --remove-output `
-            --output-dir=build `
-            src/main.py
+          sudo dpkg --add-architecture i386
+          sudo apt update
+          sudo apt install -y wine32 wine64
 
+      - name: Build Windows EXE with Nuitka
+        run: |
+          python -m nuitka \
+            --standalone \
+            --onefile \
+            --assume-yes-for-downloads \
+            --remove-output \
+            --windows-target-arch=x86_64 \
+            --output-dir=build \
+            src/main.py
 
       - name: Prepare release files
         run: |
           mkdir release
-          copy build\main.exe release\
-          copy setting.yaml release\
-          copy readme.md release\
+          cp build/main.exe release/
+          cp setting.yaml release/
+          cp readme.md release/
 
       - name: Pack artifacts
         run: |
           cd release
-          powershell Compress-Archive * CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
+          zip -r CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip *
 
       - name: Create Release & Upload
         uses: softprops/action-gh-release@v1
@@ -73,6 +88,10 @@ jobs:
           name: ${{ inputs.tag }}
           body: |
             ${{ inputs.body }}
+
+            ---
+            Built automatically via GitHub Actions using Ubuntu + Wine
+            Maintained by @Zn90107UlKa
           files: |
             release/CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
         env:
