@@ -100,6 +100,10 @@ jobs:
           name: ${{ inputs.tag }}
           body: |
             ${{ inputs.body }}
-          files: release\CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
+      
+            ---
+            Built automatically via GitHub Actions
+          files: |
+            release\*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
