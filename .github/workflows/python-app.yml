@@ -51,10 +51,11 @@ jobs:
       - name: Cache pip
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          path: |
+            C:\Users\runneradmin\AppData\Local\pip\Cache
+          key: windows-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            windows-pip-
 
       - name: Install dependencies
         shell: pwsh
@@ -99,10 +100,6 @@ jobs:
           name: ${{ inputs.tag }}
           body: |
             ${{ inputs.body }}
-
-            ---
-            Built automatically via GitHub Actions
-            Maintained by @Zn90107UlKa
           files: release\CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
