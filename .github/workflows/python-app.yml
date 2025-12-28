@@ -1,10 +1,10 @@
-name: Build & Release (Linux -> Windows EXE)
+name: Build & Release (Windows EXE)
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag name (must exist, e.g. v1.0.0)"
+        description: "Tag name (e.g. v1.0.0). Will create if not exists."
         required: true
       body:
         description: "Release description (Markdown allowed)"
@@ -15,10 +15,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.11]
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -26,26 +23,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify tag exists
+      - name: Ensure tag exists
+        shell: pwsh
         run: |
           $tag = '${{ inputs.tag }}'
-          try {
-              if (-not (git rev-parse $tag -q --verify)) {
-                  Write-Host "Tag $tag does not exist, creating..."
-                  git tag $tag
-                  git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} $tag
-              } else {
-                  Write-Host "Tag $tag already exists, skipping creation"
-              }
-          } catch {
-              Write-Host "Git check for tag failed, skipping tag creation"
+          if (-not (git rev-parse $tag -q --verify)) {
+              Write-Host "Tag $tag does not exist, creating..."
+              git tag $tag
+              git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} $tag
+          } else {
+              Write-Host "Tag $tag already exists"
           }
-
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
 
       - name: Cache pip
         uses: actions/cache@v3
@@ -56,39 +49,40 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
+        shell: pwsh
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install nuitka
 
-      - name: Install Wine
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt update
-          sudo apt install -y wine32 wine64
-
       - name: Build Windows EXE with Nuitka
+        shell: pwsh
         run: |
-          python -m nuitka \
-            --standalone \
-            --onefile \
-            --assume-yes-for-downloads \
-            --remove-output \
-            --windows-target-arch=x86_64 \
-            --output-dir=build \
-            src/main.py
+          try {
+              python -m nuitka `
+                --standalone `
+                --onefile `
+                --assume-yes-for-downloads `
+                --remove-output `
+                --output-dir=build `
+                src/main.py
+          } catch {
+              Write-Host "Nuitka build failed"
+              exit 1
+          }
 
       - name: Prepare release files
+        shell: pwsh
         run: |
-          mkdir release
-          cp build/main.exe release/
-          cp setting.yaml release/
-          cp readme.md release/
+          if (-Not (Test-Path release)) { New-Item -ItemType Directory -Path release }
+          Copy-Item build\main.exe release\
+          Copy-Item setting.yaml release\
+          Copy-Item readme.md release\
 
       - name: Pack artifacts
+        shell: pwsh
         run: |
-          cd release
-          zip -r CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip *
+          Compress-Archive -Path release\* -DestinationPath release\CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip -Force
 
       - name: Create Release & Upload
         uses: softprops/action-gh-release@v1
@@ -99,9 +93,8 @@ jobs:
             ${{ inputs.body }}
 
             ---
-            Built automatically via GitHub Actions using Ubuntu + Wine
+            Built automatically via GitHub Actions
             Maintained by @Zn90107UlKa
-          files: |
-            release/CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
+          files: release\CiweimaoDownloader-${{ inputs.tag }}-windows-x64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
