@@ -21,7 +21,7 @@ cache:
   #可选的参数有 {bookID} {bookCover} {bookName} {bookAuthor} {bookDescription}
   textFolder: "decrypted\\{bookID}\\text"
   #生成图片的缓存
-  image: false
+  image: true
   #可选的参数有 {bookID} {bookCover} {bookName} {bookAuthor} {bookDescription}
   imageFolder: "decrypted\\{bookID}\\images"
 
