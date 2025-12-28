@@ -9,6 +9,7 @@ import models
 import uuid
 import tools
 import asyncio
+import json
 import re
 import aiofiles
 import config
@@ -28,8 +29,16 @@ def parse_chapter(idx: int, chapter: models.Chapters):
     """解析章节，不下载图片，只抽取 URL + 生成 HTML."""
     try:
         raw = chapter.content or ""
-        cleaned = re.sub(r'<Book\s+{[^{}]+}>\s*([\s\S]{0,300})?', '', raw)
-        soup = BeautifulSoup(cleaned, "html.parser")
+        
+        pattern = r'<Book\s*(\{.*?\})\s*>'
+
+        def replace_book_tag(match: re.Match) -> str:
+            data = json.loads(match.group(1))
+            return f'此为作者推书，书名：{data.get("book_name","")}，ID：{data.get("book_id","")}'
+
+        result = re.sub(pattern, replace_book_tag, raw)
+        
+        soup = BeautifulSoup(result, "html.parser")
 
         # 删除 span
         for span in soup.find_all('span'):
