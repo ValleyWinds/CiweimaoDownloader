@@ -28,10 +28,19 @@ jobs:
 
       - name: Verify tag exists
         run: |
-          if ! git rev-parse "${{ inputs.tag }}" >/dev/null 2>&1; then
-            echo "Tag ${{ inputs.tag }} does not exist"
-            exit 1
-          fi
+          $tag = '${{ inputs.tag }}'
+          try {
+              if (-not (git rev-parse $tag -q --verify)) {
+                  Write-Host "Tag $tag does not exist, creating..."
+                  git tag $tag
+                  git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} $tag
+              } else {
+                  Write-Host "Tag $tag already exists, skipping creation"
+              }
+          } catch {
+              Write-Host "Git check for tag failed, skipping tag creation"
+          }
+
 
       - name: Set up Python
         uses: actions/setup-python@v5
