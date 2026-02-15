@@ -115,7 +115,8 @@ async def fetch_with_cache(url: str) -> tuple[str, bytes | None]:
 
 async def image_worker(queue: asyncio.Queue,
                        results: dict[str, bytes | None],
-                       sem: asyncio.Semaphore):
+                       sem: asyncio.Semaphore,
+                       pbar: tqdm):
     """消费者 worker：持续从队列取 URL，下载，保存结果."""
     while True:
         url = await queue.get()
@@ -127,6 +128,8 @@ async def image_worker(queue: asyncio.Queue,
             u, data = await fetch_with_cache(url)
             results[u] = data
 
+        pbar.update(1)
+        
         queue.task_done()
 
 
@@ -183,7 +186,7 @@ def GenerateEpub(book: models.Book,
     # B. 异步图片下载 Pipeline
     # ===============================
 
-    async def pipeline_main(unique_urls: list[str]):
+    async def pipeline_main(unique_urls: list[str], pbar: tqdm):
         """一个事件循环，生产者（线程池部份）已把 URL 提供给我们。"""
         await AsyncHTTP.init()              # 启动 HTTP session
 
@@ -199,7 +202,7 @@ def GenerateEpub(book: models.Book,
 
         # 启动 workers
         workers = [
-            asyncio.create_task(image_worker(queue, results, sem))
+            asyncio.create_task(image_worker(queue, results, sem, pbar))
             for _ in range(max_img_tasks)
         ]
 
@@ -222,8 +225,8 @@ def GenerateEpub(book: models.Book,
 
     unique_urls = list(dict.fromkeys(all_urls))
     if unique_urls:
-        models.Print.info(f"[INFO] Pipeline 下载图片: {len(unique_urls)}")
-        url_to_bytes = asyncio.run(pipeline_main(unique_urls))
+        pbar = tqdm(total=len(unique_urls), desc=models.Print.processingLabel(f"[PROCESSING] 正在下载图片"))
+        url_to_bytes = asyncio.run(pipeline_main(unique_urls, pbar))
     else:
         url_to_bytes = {}
 

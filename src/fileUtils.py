@@ -20,7 +20,7 @@ def loadSetting(p : Path) -> models.Config:
 def RemoveNewlinesInEachFile(folderPath): #方法，将章节文档中的换行删去
     folder = Path(folderPath)
     if not folder.exists():
-        models.Print.err("[ERR] 找不到对应的目录")
+        models.Print.err(f"[ERR] 找不到{folder.resolve()}")
         models.Print.opt("[OPT] 按回车退出程序...")
         exit()
     
@@ -44,7 +44,7 @@ def RemoveNewlinesInEachFile(folderPath): #方法，将章节文档中的换行�
 def TransformFilename(keyPath): #方法，将key文件名转化为chapterID
     folder = Path(keyPath)
     if not folder.exists():
-        models.Print.err("[ERR] 找不到key目录")
+        models.Print.err(f"[ERR] 找不到{folder.resolve()}")
         models.Print.opt("[OPT] 按回车退出程序...")
         exit()
     

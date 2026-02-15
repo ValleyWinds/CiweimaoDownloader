@@ -52,6 +52,12 @@ class Print:
 # 网络出错重试
 class Requests:
     def __init__(self, maxRetries=3, backoff=0.5, timeout=10):
+        self.maxRetries = maxRetries
+        self.backoff = backoff
+        self.timeout = timeout
+        self._init_session()
+
+    def _init_session(self):
         self.session = requests.Session()
         self.session.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.6788.76 Safari/537.36",
@@ -61,26 +67,31 @@ class Requests:
         }
 
         retry_strategy = Retry(
-            total=maxRetries,
+            total=self.maxRetries,
             status_forcelist=[403, 404, 429, 500, 502, 503, 504],
             allowed_methods={"GET", "POST"},
-            backoff_factor=backoff
+            backoff_factor=self.backoff
         )
+
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("http://", adapter)
         self.session.mount("https://", adapter)
-        self.timeout = timeout
+
+    def _request(self, method, url, **kwargs):
+        try:
+            return self.session.request(method, url, timeout=self.timeout, **kwargs)
+
+        except RuntimeError:
+            # 只要 session 被关闭，必然是 RuntimeError
+            self._init_session()
+            return self.session.request(method, url, timeout=self.timeout, **kwargs)
 
     def get(self, url, params=None):
-        if params is None:
-            params = {}
-        return self.session.get(url, timeout=self.timeout, params=params)
+        return self._request("GET", url, params=params or {})
 
     def post(self, url, data=None):
-        if data is None:
-            data = {}
-        return self.session.post(url, timeout=self.timeout, data=data)
-
+        return self._request("POST", url, data=data or {})
+    
 # yaml配置文件
 class homePageConfig(BaseModel):
     enable: bool = False
