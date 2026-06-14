@@ -1,12 +1,66 @@
-from encodings.base64_codec import base64_decode
 from pathlib import Path
 import config
 import fileUtils
 import models
-import base64
 import tools
 
-defaultSettingBase64 = "I+i/meaYr+S7i+e7jemhteeUn+aIkOeahOmAiemhuQpob21lUGFnZTogIAogIGVuYWJsZTogdHJ1ZQogICPlj6/pgInnmoTlj4LmlbDmnIkge2Jvb2tJRH0ge2Jvb2tDb3Zlcn0ge2Jvb2tOYW1lfSB7Ym9va0F1dGhvcn0ge2Jvb2tEZXNjcmlwdGlvbn0ge0VudGVyfQogIHN0eWxlOiAie2Jvb2tDb3Zlcn17RW50ZXJ95Lmm5ZCNOntib29rTmFtZX17RW50ZXJ95L2c6ICFOntib29rQXV0aG9yfXtFbnRlcn3mj4/ov7A6e2Jvb2tEZXNjcmlwdGlvbn0iCgoj6L+Z5piv5om56YeP5qih5byP55qE5byA5ZCv6YCJ6aG5CmJhdGNoOiAKICBlbmFibGU6IGZhbHNlCiAgI+aJk+W8gOi/meS4qumAiemhueiDveiuqeeoi+W6j+iHquWKqOWkhOeQhuebruW9leS4i+eahOS7peaVsOWtl+S4uuWQjeeahOaWh+S7tuWkue+8jOiAjHF1ZXVl5Lit55qE5YaF5a655Lya6KKr5b+955WlCiAgYXV0bzogdHJ1ZQogICPovpPlhaXkvaDmg7PlpITnkIbnmoTkuabnsY3nmoR1cmzmiJbogIVpZAogIHF1ZXVlOgogICAgLSAxMDAwMDAwMDAKICAgIC0gMjAwMDAwMDAwCgoj6L+Z5piv57yT5a2Y55qE6YCJ6aG5CmNhY2hlOgogICPnlJ/miJDmlofmnKznmoTnvJPlrZgKICB0ZXh0OiB0cnVlCiAgI+WPr+mAieeahOWPguaVsOaciSB7Ym9va0lEfSB7Ym9va0NvdmVyfSB7Ym9va05hbWV9IHtib29rQXV0aG9yfSB7Ym9va0Rlc2NyaXB0aW9ufQogIHRleHRGb2xkZXI6ICJkZWNyeXB0ZWRcXHtib29rSUR9XFx0ZXh0IgogICPnlJ/miJDlm77niYfnmoTnvJPlrZgKICBpbWFnZTogdHJ1ZQogICPlj6/pgInnmoTlj4LmlbDmnIkge2Jvb2tJRH0ge2Jvb2tDb3Zlcn0ge2Jvb2tOYW1lfSB7Ym9va0F1dGhvcn0ge2Jvb2tEZXNjcmlwdGlvbn0KICBpbWFnZUZvbGRlcjogImRlY3J5cHRlZFxce2Jvb2tJRH1cXGltYWdlcyIKCiPml6Xlv5fnm7jlhbPnmoTorr7nva4KbG9nOgogICPlhbPpl63ov5nkuKrpgInpobnkvJrlv73nlaUieHh456ug5pyq6LSt5LmwIueahOitpuWRigogIG5vdEZvdW5kV2FybjogdHJ1ZQoKI+Wkmue6v+eoi+ebuOWFs+eahOiuvue9rgptdWx0aVRocmVhZDoKICAj5pyA5aSn57q/56iL5pWwCiAgbWF4V29ya2VyczogOAoKI+aJi+WKqOebruW9leeahOiuvue9rumAiemhuQptYW51YWxCb29rOgogIGVuYWJsZTogZmFsc2UKICAj5b2T6L+Z5Liq6YCJ6aG55omT5byA5pe277yM56iL5bqP5Lya57uT5ZCIanNvbuaWh+S7tuWSjOS5puexjeWKoOWvhuaWh+S7tuWkue+8jOiLpeafkOS4gOeroOiKguWcqGpzb27kuK3kuI3lrZjlnKjogIzlnKjkuabnsY3liqDlr4bmlofku7blpLnkuK3lrZjlnKjml7bvvIznqIvluo/kuZ/kvJrlsIblhbbovpPlh7rvvIzkvYbmmK8ieHh456ug5pyq6LSt5LmwIueahOaPkOekuuWwhuS8muWkseaViAogIGF1dG9FeHRlbmQ6IHRydWUKICBqc29uU3RyaW5nOiAneyJib29rSUQiOiIxMDAwMDAwMDUiLCJib29rTmFtZSI6IuaIkeeahOWli+aWlyIsImF1dGhvck5hbWUiOiLluIzlsJQiLCJib29rRGVzY3JpcHRpb24iOiLov5nmmK/miJHnmoTlpYvmlpfnmoTnroDku4siLCJjb3ZlclBhdGgiOiIuL2NvdmVyLmpwZyIsImNvbnRlbnRzIjp7IjEwMDAwMDEiOiLnrKzkuIDnq6AiLCIxMDAwMDAyIjoi56ys5LqM56ugIiwiMTAwMDAwMyI6Iue7iOeroCJ9fScKIyB7CiMgICAgICJib29rSUQiOiAiMTAwMDAwMDA1IiwKIyAgICAgImJvb2tOYW1lIjogIuaIkeeahOWli+aWlyIsCiMgICAgICJhdXRob3JOYW1lIjogIuW4jOWwlCIsCiMgICAgICJib29rRGVzY3JpcHRpb24iOiAi6L+Z5piv5oiR55qE5aWL5paX55qE566A5LuLIiwKIyAgICAgImNvdmVyUGF0aCI6ICIuL2NvdmVyLmpwZyIsCiMgICAgICJjb250ZW50cyI6IHsKIyAgICAgICAgICIxMDAwMDAxIjogIuesrOS4gOeroCIsCiMgICAgICAgICAiMTAwMDAwMiI6ICLnrKzkuoznq6AiLAojICAgICAgICAgIjEwMDAwMDMiOiAi57uI56ugIgojICAgICB9CiMgfQ=="
+DEFAULT_SETTING_YAML = """\
+#这是介绍页生成的选项
+homePage:
+  enable: true
+  #可选的参数有 {bookID} {bookCover} {bookName} {bookAuthor} {bookDescription} {Enter}
+  style: "{bookCover}{Enter}书名:{bookName}{Enter}作者:{bookAuthor}{Enter}描述:{bookDescription}"
+
+#这是批量模式的开启选项
+batch:
+  enable: false
+  #打开这个选项能让程序自动处理目录下的以数字为名的文件夹，而queue中的内容会被忽略
+  auto: true
+  #输入你想处理的书籍的url或者id
+  queue:
+    - 100000000
+    - 200000000
+
+#这是缓存的选项
+cache:
+  #生成文本的缓存
+  text: true
+  #可选的参数有 {bookID} {bookCover} {bookName} {bookAuthor} {bookDescription}
+  textFolder: "decrypted/{bookID}/text"
+  #生成图片的缓存
+  image: true
+  #可选的参数有 {bookID} {bookCover} {bookName} {bookAuthor} {bookDescription}
+  imageFolder: "decrypted/{bookID}/images"
+
+#日志相关的设置
+log:
+  #关闭这个选项会忽略"xxx章未购买"的警告
+  notFoundWarn: true
+
+#多线程相关的设置
+multiThread:
+  #最大线程数
+  maxWorkers: 8
+
+#手动目录的设置选项
+manualBook:
+  enable: false
+  #当这个选项打开时，程序会结合json文件和书籍加密文件夹，若某一章节在json中不存在而在书籍加密文件夹中存在时，程序也会将其输出，但是"xxx章未购买"的提示将会失效
+  autoExtend: true
+  jsonString: '{"bookID":"100000005","bookName":"我的奋斗","authorName":"希尔","bookDescription":"这是我的奋斗的简介","coverPath":"./cover.jpg","contents":{"1000001":"第一章","1000002":"第二章","1000003":"终章"}}'
+# {
+#     "bookID": "100000005",
+#     "bookName": "我的奋斗",
+#     "authorName": "希尔",
+#     "bookDescription": "这是我的奋斗的简介",
+#     "coverPath": "./cover.jpg",
+#     "contents": {
+#         "1000001": "第一章",
+#         "1000002": "第二章",
+#         "1000003": "终章"
+#     }
+# }
+"""
 
 def CalculateParama(book:models.Book):
     book.safeName = tools.SanitizeName(book.name)
@@ -17,18 +71,19 @@ def CalculateParama(book:models.Book):
         chapter.safeTitle = tools.SanitizeName(chapter.title)
         if (config.setting.cache.text == True):
             chapter.decrypted = Path(config.textFolder) / f"{count} {chapter.safeTitle}.txt"
-        chapter.key = Path(f"key\\{chapter.id}")
-        chapter.encryptedTxt = Path(f"{book.id}\\{chapter.id}.txt")
+        chapter.key = Path("key") / str(chapter.id)
+        chapter.encryptedTxt = Path(str(book.id)) / f"{chapter.id}.txt"
 
 def init():
     global setting
-    if Path(f".\\setting.yaml").exists() == False:
+    config_path = Path("setting.yaml")
+    if not config_path.exists():
         models.Print.warn(f"[WARN] 找不到 setting.yaml，使用默认配置继续...")
-        with open(Path(f".\\setting.yaml"), "w", encoding="utf-8") as f:
-            f.write( base64.b64decode(defaultSettingBase64).decode("utf-8"))
-    
+        with open(config_path, "w", encoding="utf-8") as f:
+            f.write(DEFAULT_SETTING_YAML)
+
     try:
-        setting = fileUtils.loadSetting(Path(f".\\setting.yaml"))
+        setting = fileUtils.loadSetting(config_path)
     except Exception as e:
         models.Print.err(f"[ERR] {e}")
     if setting.batch.enable == True and setting .batch.queue.count == 0:
