@@ -41,7 +41,7 @@ multiThread:
 adb:
   enable: true
   #留空则自动检测，多设备时自动选择安装了刺猬猫的设备
-  device: "127.0.0.1:5555"
+  device: ""
   #打开这个选项能让程序自动扫描设备上的所有书籍，此时books设置会被忽略
   auto: true
   #当auto为false时，手动指定需要拉取的book_id列表
