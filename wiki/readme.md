@@ -2,24 +2,62 @@
 本软件只能够下载免费章节和已购买的章节。
 
 # 本软件优点
-1. 下载在手机端进行，软件无需登录，不接触账号相关数据。
-2. 自动生成全文txt、epub以及单章txt，且自动解析文章中的图片url后整合到epub中，且位置不变。
-3. 程序生成epub符合其3.3版本的规范。
-4. 程序使用结构体Chapters和Book传递参数，简洁易读。
-5. 程序使用了多线程特性，处理速度快。
+1. 支持 ADB 自动拉取，连接模拟器后一键完成，无需手动操作文件。
+2. 下载在手机端进行，软件无需登录，不接触账号相关数据。
+3. 自动生成全文txt、epub以及单章txt，且自动解析文章中的图片url后整合到epub中，且位置不变。
+4. 程序生成epub符合其3.3版本的规范。
+5. 程序使用结构体Chapters和Book传递参数，简洁易读。
+6. 程序使用了多线程和异步特性，处理速度快。
+7. 支持配置文件预设全部参数，零交互运行。
 
 # 教程
-## 一.准备下载工具
+
+## 方式一：ADB 自动模式（推荐）
+
+ADB 模式可自动从模拟器中拉取文件，无需手动复制。
+
+### 准备工具
+1. 支持 root 和 adb 远程调试的安卓模拟器（雷电、MuMu等均可）
+2. 刺猬猫app，版本 > 2.9.303
+3. 解码软件，前往[下载页面](https://github.com/Eason3Blue/CiweimaoDownloader/releases/latest)下载解压
+
+### 步骤
+
+1. 安装模拟器，开启 root 权限和 adb 远程调试（雷电：设置→其他设置→开启root+adb调试）
+2. 安装刺猬猫app，登录后找到小说，长按选择"下载所有章节"
+3. 等待下载完成后再等至少一分钟，期间不要操作模拟器，关闭刺猬猫app
+4. 在电脑端确认 adb 已连接：`adb devices`
+5. 编辑 `setting.yaml`，设置 `adb.enable: true`（默认即开启）。多设备时设置 `adb.device` 指定设备序列号
+6. 双击运行 `main.exe`，程序自动拉取文件、下载目录、解密、打包
+
+### 模式说明
+
+| 条件 | 行为 |
+|------|------|
+| `adb.auto: true` | 自动扫描设备上所有已下载的书籍 |
+| `adb.auto: false` | 仅拉取 `adb.books` 列表中的书 |
+| `interactive.mode: auto` | config 完整则零交互运行，不完整则弹出菜单 |
+| `interactive.mode: never` | 完全不交互，config 不完整时报错退出 |
+
+输出文件在 `output/` 目录中。
+
+---
+
+## 方式二：手动文件复制（传统方式）
+
+若无法使用 adb，可按传统方式手动导出文件。
+
+### 一.准备下载工具
 1. 一个安卓模拟器，要求可以**开启root权限**，本文以MuMu模拟器为例。
 2. 一个文件管理器，要求可以使用root权限访问根目录，本文以MT文件管理器为例
 3. 刺猬猫app，要求版本大于2.9.303。
 4. 解码软件，前往[下载页面](https://github.com/Eason3Blue/CiweimaoDownloader/releases/latest)下载，下载完后请解压压缩包
 
-## 二、安装环境
+### 二、安装环境
 
 1. 安装MuMu模拟器，并安装MT文件管理器和刺猬猫小说app（如果是第二次使用，请先清空刺猬猫小说app的应用数据或重装）开启模拟器root权限<img src="\img\CiweimaoDownloader\1.png" alt="开启root权限的选项" />
 
-## 三、模拟器下载
+### 三、模拟器下载
 
 2. 打开刺猬猫app，正常登录，找到你想下载的小说，用鼠标左键长按它，选择"下载所有章节"<img src="\img\CiweimaoDownloader\2.png" alt="选择下载所有章节" />
 
@@ -31,25 +69,26 @@
 
 6. 在左边面板依次找到 `data/data/com.kuangxiangciweimao.novel/files`，之后在分别找到 `Y2hlcy8` 文件夹和 `novelCiwei/reader/booksnew/<小说数字id>`，分别长按它们选择`复制->`，选择确认复制。<img src="\img\CiweimaoDownloader\4.png" alt="文件操作对话框" />
 
-## 四、导出关键数据
+### 四、导出关键数据
 
 7. 点击模拟器上面的那个箭头，选择`文件传输`<img src="\img\CiweimaoDownloader\5.png" alt="文件传输工具" />
 
 8. 选择上栏右侧的"打开"<img src="\img\CiweimaoDownloader\6.png" alt="文件传输工具" />弹出了一个文件夹，选中`Y2hlcy8`和`<小说数字id>`两个文件夹，复制到一个纯英文目录，例如`D:\cwmd`
 
-## 五、运行程序解码
+### 五、运行程序解码
 
-9. 将下载解码软件也解压到`D:\cwmd`，将`Y2hlcy8`改名成`key`<img src="\img\CiweimaoDownloader\7.png" alt="目录样貌" />
-
-10. 双击运行main.exe，等待程序输出到
+9. 将下载解码软件也解压到`D:\cwmd`，将`Y2hlcy8`改名为`key`，并将`key`和`<小说数字id>`放入 `data` 目录。结构如下：
 ```
-[OPT] 输入你想下载的书籍Url或目录名字：
+D:\cwmd\
+  main.exe
+  setting.yaml
+  data\
+    key\
+    <小说数字id>\
 ```
-<img src="\img\CiweimaoDownloader\8.png" alt="控制台" />如果你操作规范，这里只检测出一个，那么直接复制输出的`<小说数字id>`并粘贴到输入中即可
+<img src="\img\CiweimaoDownloader\7.png" alt="目录样貌" />
 
-11. 如果你有多个，那么打开浏览器，进入ciweimao.com，搜索找到你要的小说，把它的url粘贴下来<img src="\img\CiweimaoDownloader\9.png" alt="小说主页" />
-
-12. 等待程序运行成功，若出现问题，请前往[Issues页面](https://github.com/Eason3Blue/CiweimaoDownloader/issues)提出问题，你应该能在文件夹中找到小说对应的txt和epub文件
+10. 双击运行main.exe，选择对应模式即可。输出文件在 `output/` 目录中。
 
 # 做出贡献
 如果你在使用过程中遇到了bug，或者你有什么新奇的想法，或者你想要什么功能，都请前往[Issues页面](https://github.com/Eason3Blue/CiweimaoDownloader/issues)，若此项目帮到了你，请前往[项目主页](https://github.com/Eason3Blue/CiweimaoDownloader)上点个**Star**吧

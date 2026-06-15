@@ -16,6 +16,8 @@ batch:
   enable: false
   #打开这个选项能让程序自动处理目录下的以数字为名的文件夹，而queue中的内容会被忽略
   auto: true
+  #单书模式时直接指定url或id，留空则在交互模式下询问
+  url: ""
   #输入你想处理的书籍的url或者id
   queue:
     - 100000000
@@ -26,11 +28,11 @@ cache:
   #生成文本的缓存
   text: true
   #可选的参数有 {bookID} {bookCover} {bookName} {bookAuthor} {bookDescription}
-  textFolder: "decrypted/{bookID}/text"
+  textFolder: "data/decrypted/{bookID}/text"
   #生成图片的缓存
   image: true
   #可选的参数有 {bookID} {bookCover} {bookName} {bookAuthor} {bookDescription}
-  imageFolder: "decrypted/{bookID}/images"
+  imageFolder: "data/decrypted/{bookID}/images"
 
 #日志相关的设置
 log:
@@ -41,6 +43,24 @@ log:
 multiThread:
   #最大线程数
   maxWorkers: 8
+
+#adb自动拉取的设置选项
+adb:
+  enable: false
+  #留空则自动检测，多设备时自动选择安装了刺猬猫的设备
+  device: ""
+  #打开这个选项能让程序自动扫描设备上的所有书籍，此时books设置会被忽略
+  auto: true
+  #当auto为false时，手动指定需要拉取的book_id列表
+  books:
+    - 100000000
+
+#交互模式的设置选项
+interactive:
+  #auto = 配置文件完整时无交互运行，不完整时弹出菜单
+  #always = 始终显示菜单
+  #never = 绝不显示菜单，配置不完整时报错退出
+  mode: auto
 
 #手动目录的设置选项
 manualBook:
@@ -64,15 +84,15 @@ manualBook:
 
 def CalculateParama(book:models.Book):
     book.safeName = tools.SanitizeName(book.name)
-    book.decryptedTxt = Path(f"{book.safeName}.txt")
+    book.decryptedTxt = Path("output") / f"{book.safeName}.txt"
     count = 0
     for chapter in book.chapters:
         count += 1
         chapter.safeTitle = tools.SanitizeName(chapter.title)
         if (config.setting.cache.text == True):
             chapter.decrypted = Path(config.textFolder) / f"{count} {chapter.safeTitle}.txt"
-        chapter.key = Path("key") / str(chapter.id)
-        chapter.encryptedTxt = Path(str(book.id)) / f"{chapter.id}.txt"
+        chapter.key = Path("data/key") / str(chapter.id)
+        chapter.encryptedTxt = Path("data") / str(book.id) / f"{chapter.id}.txt"
 
 def init():
     global setting
@@ -86,7 +106,7 @@ def init():
         setting = fileUtils.loadSetting(config_path)
     except Exception as e:
         models.Print.err(f"[ERR] {e}")
-    if setting.batch.enable == True and setting .batch.queue.count == 0:
+    if setting.batch.enable and not setting.batch.auto and len(setting.batch.queue) == 0:
         models.Print.err("[ERR] 设置文件中的batch目录下的queue项设置错误，因此这个选项将不会起作用")
         setting.batch.enable = False
     global textFolder
