@@ -13,17 +13,39 @@
 
 温馨提示：本软件仅为了个人存档、学习使用，想要传播盗版、损坏原作者利益的请自觉离开
 
-### 项目进程
-   1. 一个完整的测试框架
-   2. 在epubUtils.py的异步进程中添加tqdm式的进度条，换句话说，更完整的日志输出
-   3. 性能优化方案
-   4. 代码架构重构，目标：高效、易读且模块化 
+### 运行方式
+
+- **Windows**: 解压后双击 `run.bat`
+- **Linux**: 解压后运行 `./run.sh`
+
+无需安装 Python，所有依赖均已包含在 `python/` 目录中。ADB 工具也已内置在 `adb/` 目录中。
 
 ## 使用教程
 
-[教程](https://github.com/NovelDownloader/CiweimaoDownloader/blob/main/wiki/readme.md)
+详见压缩包内 `使用说明.md`
+
+## 构建
+
+```bash
+# Windows (PowerShell)
+.\package.ps1
+
+# Linux
+./package.sh
+```
+
+构建产物位于 `dist/` 目录。
+
+## 开发
+
+```bash
+pip install -r requirements.txt
+python src/main.py
+```
 
 ## 版权声明
+
+本软件基于 **GPL-3.0** 协议开源。
 
 * 📖 **仅供个人学习与技术研究**  
 * ⛔ **禁止任何形式的商业用途**  

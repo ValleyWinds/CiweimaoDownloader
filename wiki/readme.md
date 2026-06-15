@@ -19,16 +19,15 @@ ADB 模式可自动从模拟器中拉取文件，无需手动复制。
 ### 准备工具
 1. 支持 root 和 adb 远程调试的安卓模拟器（雷电、MuMu等均可）
 2. 刺猬猫app，版本 > 2.9.303
-3. 解码软件，前往[下载页面](https://github.com/Eason3Blue/CiweimaoDownloader/releases/latest)下载解压
 
 ### 步骤
 
 1. 安装模拟器，开启 root 权限和 adb 远程调试（雷电：设置→其他设置→开启root+adb调试）
-2. 安装刺猬猫app，登录后找到小说，长按选择"下载所有章节"
+2. 安装刺猬猫app。**如果模拟器中已有刺猬猫app，请先清空应用数据或卸载重装**，然后登录，找到小说，长按选择"下载所有章节"
 3. 等待下载完成后再等至少一分钟，期间不要操作模拟器，关闭刺猬猫app
-4. 在电脑端确认 adb 已连接：`adb devices`
-5. 编辑 `setting.yaml`，设置 `adb.enable: true`（默认即开启）。多设备时设置 `adb.device` 指定设备序列号
-6. 双击运行 `main.exe`，程序自动拉取文件、下载目录、解密、打包
+4. 在电脑端确认 adb 已连接：`adb devices`（也可使用解压目录中 `adb/` 自带的 adb）
+5. 多设备时编辑 `setting.yaml`，设置 `adb.device` 指定设备序列号（单设备无需任何配置）
+6. 双击运行 `run.bat`，程序自动拉取文件、下载目录、解密、打包
 
 ### 模式说明
 
@@ -37,6 +36,7 @@ ADB 模式可自动从模拟器中拉取文件，无需手动复制。
 | `adb.auto: true` | 自动扫描设备上所有已下载的书籍 |
 | `adb.auto: false` | 仅拉取 `adb.books` 列表中的书 |
 | `interactive.mode: auto` | config 完整则零交互运行，不完整则弹出菜单 |
+| `interactive.mode: always` | 始终显示交互菜单 |
 | `interactive.mode: never` | 完全不交互，config 不完整时报错退出 |
 
 输出文件在 `output/` 目录中。
@@ -51,7 +51,7 @@ ADB 模式可自动从模拟器中拉取文件，无需手动复制。
 1. 一个安卓模拟器，要求可以**开启root权限**，本文以MuMu模拟器为例。
 2. 一个文件管理器，要求可以使用root权限访问根目录，本文以MT文件管理器为例
 3. 刺猬猫app，要求版本大于2.9.303。
-4. 解码软件，前往[下载页面](https://github.com/Eason3Blue/CiweimaoDownloader/releases/latest)下载，下载完后请解压压缩包
+4. 解码软件压缩包，解压到纯英文目录
 
 ### 二、安装环境
 
@@ -77,22 +77,29 @@ ADB 模式可自动从模拟器中拉取文件，无需手动复制。
 
 ### 五、运行程序解码
 
-9. 将下载解码软件也解压到`D:\cwmd`，将`Y2hlcy8`改名为`key`，并将`key`和`<小说数字id>`放入 `data` 目录。结构如下：
+9. 将下载的解码软件也解压到`D:\cwmd`，将`Y2hlcy8`改名为`key`，并将`key`和`<小说数字id>`放入 `data` 目录。结构如下：
 ```
 D:\cwmd\
-  main.exe
+  run.bat
   setting.yaml
+  python\          (嵌入式 Python，无需安装)
+  adb\             (adb 工具)
+  src\             (程序源代码)
   data\
     key\
     <小说数字id>\
 ```
 <img src="\img\CiweimaoDownloader\7.png" alt="目录样貌" />
 
-10. 双击运行main.exe，选择对应模式即可。输出文件在 `output/` 目录中。
+10. 编辑 `setting.yaml`，将 `adb.enable` 设为 `false`，然后双击运行 `run.bat`，选择对应模式即可。输出文件在 `output/` 目录中。
 
-# 做出贡献
-如果你在使用过程中遇到了bug，或者你有什么新奇的想法，或者你想要什么功能，都请前往[Issues页面](https://github.com/Eason3Blue/CiweimaoDownloader/issues)，若此项目帮到了你，请前往[项目主页](https://github.com/Eason3Blue/CiweimaoDownloader)上点个**Star**吧
+---
 
+## Linux 用户
+
+Linux 用户使用方法相同：解压后运行 `run.sh`。
+
+---
 
 # 版权说明
 📖 仅供个人学习与技术研究
@@ -104,3 +111,5 @@ D:\cwmd\
 ⏰ 请在 24 小时内学习后立即删除文件
 
 ⚠️ 作者不承担因不当使用导致的损失及法律后果
+
+本软件基于 GPL-3.0 协议开源。

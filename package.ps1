@@ -76,6 +76,7 @@ Get-ChildItem -Recurse -Directory -Path "$Dist\src" -Filter "__pycache__" -Error
 Get-ChildItem -Recurse -Path "$Dist\src" -Filter "*.pyc" -ErrorAction SilentlyContinue | Remove-Item -Force
 Copy-Item setting.yaml "$Dist\"
 Copy-Item run.bat "$Dist\"
+Copy-Item wiki\readme.md "$Dist\使用说明.md"
 
 # ---- Package ----
 Write-Host "=== Packaging ==="

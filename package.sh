@@ -58,6 +58,7 @@ find "$DIST/src" -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 find "$DIST/src" -name '*.pyc' -delete 2>/dev/null || true
 cp setting.yaml "$DIST/"
 cp run.sh "$DIST/"
+cp wiki/readme.md "$DIST/使用说明.md"
 chmod +x "$DIST/run.sh"
 
 # Remove stale done markers so re-runs work
