@@ -11,6 +11,7 @@ pyyaml
 filetype
 aiohttp
 aiofiles
+adbutils
 
 #build
 nuitka

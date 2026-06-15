@@ -301,6 +301,16 @@ def process_book(entry: str):
 
 
 def main():
+    models.Print.info(
+        "[INFO] 本程序基于Zn90107UlKa/CiweimaoDownloader@github.com\n"
+        "[INFO] 如果您是通过被售卖的渠道获得的本软件，请您立刻申请退款。\n"
+        "[INFO] 仅供个人学习与技术研究\n"
+        "[INFO] 禁止任何形式的商业用途\n"
+        "[INFO] 所有内容版权归原作者及刺猬猫平台所有\n"
+        "[INFO] 请在 24 小时内学习后立即删除文件\n"
+        "[INFO] 作者不承担因不当使用导致的损失及法律后果"
+    )
+    
     config.init()
 
     # ADB init
@@ -315,16 +325,6 @@ def main():
                 exit(1)
 
     fileUtils.TransformFilename("data/key")
-
-    models.Print.info(
-        "[INFO] 本程序基于Zn90107UlKa/CiweimaoDownloader@github.com\n"
-        "[INFO] 如果您是通过被售卖的渠道获得的本软件，请您立刻申请退款。\n"
-        "[INFO] 仅供个人学习与技术研究\n"
-        "[INFO] 禁止任何形式的商业用途\n"
-        "[INFO] 所有内容版权归原作者及刺猬猫平台所有\n"
-        "[INFO] 请在 24 小时内学习后立即删除文件\n"
-        "[INFO] 作者不承担因不当使用导致的损失及法律后果"
-    )
 
     queue = resolve_queue()
     if queue is None:
