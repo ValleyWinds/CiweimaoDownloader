@@ -211,3 +211,7 @@ build-Nuitka.zip
 build-Pyinstaller.zip
 testData/
 epubcheck-5.2.1
+
+# Project runtime data
+data/
+output/

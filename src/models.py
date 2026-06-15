@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from dataclasses import dataclass,field
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from typing import Optional
+from typing import Optional, Literal
 from pathlib import Path
 import requests
 
@@ -43,8 +43,6 @@ class Print:
     def warn(msg): print(Back.LIGHTYELLOW_EX + Fore.BLACK + Style.BRIGHT + f"{msg}")
     @staticmethod
     def info(msg): print(f"{msg}")
-    @staticmethod
-    def opt(msg): return input(Back.LIGHTWHITE_EX + Fore.BLACK + f"{msg}")
     @staticmethod
     def processingLabel(msg):
         return Back.LIGHTBLUE_EX + Style.BRIGHT + Fore.WHITE + f"{msg}" + Style.RESET_ALL
@@ -101,12 +99,13 @@ class batchConfig(BaseModel):
     enable: bool = False
     auto: bool = False
     queue: list = field(default_factory=list)
+    url: str = ""
 
 class cacheConfig(BaseModel):
     text: bool = True
-    textFolder: str = "decrypted\\<bookID>\\text"
+    textFolder: str = "decrypted/{bookID}/text"
     image: bool = False
-    imageFolder: str = "decrypted\\<bookID>/images"
+    imageFolder: str = "decrypted/{bookID}/images"
 
 class logConfig(BaseModel):
     notFoundWarn: bool = True
@@ -119,6 +118,15 @@ class manualBookConfig(BaseModel):
     autoExtend: bool = True
     jsonString: str = field(default_factory=str)
 
+class adbConfig(BaseModel):
+    enable: bool = False
+    auto: bool = True
+    books: list = field(default_factory=list)
+    device: str = ""
+
+class interactiveConfig(BaseModel):
+    mode: Literal["auto", "always", "never"] = "auto"
+
 class Config(BaseModel):
     homePage: homePageConfig
     batch: batchConfig
@@ -126,3 +134,5 @@ class Config(BaseModel):
     log: logConfig
     multiThread: multiThreadConfig
     manualBook: manualBookConfig
+    adb: adbConfig
+    interactive: interactiveConfig
